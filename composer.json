@@ -1,0 +1,9 @@
+{
+    "require": {
+        "toin0u/digitalocean-v2": "~2.0",
+        "guzzlehttp/guzzle": "^6.3"
+    },
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
+}
