@@ -29,16 +29,7 @@ class OceanBackup
 
     public function runBackup()
     {
-        // TOOD
-        // Load config file
-        // Load droplet list
-        // Foreach droplet
-        // - create a snapshot
-        // - delete old snapshot
-        // Email notification
-
         $this->droplet = $this->digitalOcean->droplet();
-
 
         $dropletIds = Configtor::instance()->get('droplet_ids', []);
         foreach ($dropletIds as $dropletId) {
