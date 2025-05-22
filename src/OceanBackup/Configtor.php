@@ -22,7 +22,7 @@ class Configtor
     public function __construct()
     {
         $filePaths = [
-            '~/ocean_backup.ini',
+            realpath($_SERVER["HOME"]).'/ocean_backup.ini',
             '/etc/ocean_backup.ini',
         ];
 
