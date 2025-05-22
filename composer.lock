@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4d58df2a51f674491c77bf30546c1f02",
+    "content-hash": "57619d5a7459263d4f4f4f086df554c5",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -239,37 +239,36 @@
         },
         {
             "name": "toin0u/digitalocean-v2",
-            "version": "2.2.0",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/toin0u/DigitalOceanV2.git",
-                "reference": "c894bb11d09fff273a10291b0c0f3ef81297a578"
+                "url": "https://github.com/DigitalOceanPHP/Client.git",
+                "reference": "0e8e134060ba8ed4944ececd0d4b1f7c79313910"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/toin0u/DigitalOceanV2/zipball/c894bb11d09fff273a10291b0c0f3ef81297a578",
-                "reference": "c894bb11d09fff273a10291b0c0f3ef81297a578",
+                "url": "https://api.github.com/repos/DigitalOceanPHP/Client/zipball/0e8e134060ba8ed4944ececd0d4b1f7c79313910",
+                "reference": "0e8e134060ba8ed4944ececd0d4b1f7c79313910",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~1.11",
-                "guzzle/guzzle": "~3.7",
-                "guzzlehttp/guzzle": "~5.0|~6.0",
-                "kriswallsmith/buzz": "~0.10",
-                "phpspec/phpspec": "~2.4"
+                "guzzle/guzzle": "^3.7",
+                "guzzlehttp/guzzle": "^5.3|^6.3",
+                "kriswallsmith/buzz": "^0.16",
+                "phpspec/phpspec": "^2.5"
             },
             "suggest": {
-                "guzzle/guzzle": "To use GuzzleAdapter, require guzzle/guzzle:~3.7.",
-                "guzzlehttp/guzzle": "To use GuzzleHttpAdapter, require guzzlehttp/guzzle:~5.0|~6.0.",
-                "kriswallsmith/buzz": "To use BuzzAdapter, require kriswallsmith/buzz:~0.10."
+                "guzzle/guzzle": "To use GuzzleAdapter, require guzzle/guzzle:^3.7.",
+                "guzzlehttp/guzzle": "To use GuzzleHttpAdapter, require guzzlehttp/guzzle:^5.3|^6.3.",
+                "kriswallsmith/buzz": "To use BuzzAdapter, require kriswallsmith/buzz:^0.16."
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.2-dev"
+                    "dev-master": "2.3-dev"
                 }
             },
             "autoload": {
@@ -304,7 +303,17 @@
                 "digitalocean",
                 "vps"
             ],
-            "time": "2017-04-18T15:02:19+00:00"
+            "support": {
+                "issues": "https://github.com/toin0u/DigitalOceanV2/issues",
+                "source": "https://github.com/toin0u/DigitalOceanV2"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/GrahamCampbell",
+                    "type": "github"
+                }
+            ],
+            "time": "2019-01-27T21:16:56+00:00"
         }
     ],
     "packages-dev": [],
@@ -314,5 +323,6 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "plugin-api-version": "2.2.0"
 }

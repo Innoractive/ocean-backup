@@ -1,6 +1,6 @@
 {
     "require": {
-        "toin0u/digitalocean-v2": "~2.0",
+        "toin0u/digitalocean-v2": "~2.3",
         "guzzlehttp/guzzle": "^6.3"
     },
     "autoload": {

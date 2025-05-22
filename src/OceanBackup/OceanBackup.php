@@ -17,31 +17,61 @@ class OceanBackup
     /** @var \DigitalOceanV2\DigitalOceanV2 $digitalOcean DO API, initialized in constructor. */
     protected $digitalOcean;
 
-    /** @var \DigitalOceanV2|Droplet $droplet Droplet API, initialized in constructor. */
+    /** @var \DigitalOceanV2\Api\Droplet $droplet Droplet API, initialized in constructor. */
     protected $droplet;
+
+    /** @var \DigitalOceanV2\Api\Volume $volume Volume API, initialized in constructor. */
+    protected $volume;
 
     public function __construct()
     {
         $adapter = new GuzzleHttpAdapter(Configtor::instance()->get('token'));
         $this->digitalOcean = new DigitalOceanV2($adapter);
         $this->droplet = $this->digitalOcean->droplet();
+        $this->volume = $this->digitalOcean->volume();
     }
 
     public function runBackup()
     {
+        Logger::info("Processing Droplet snapshots...");
         $dropletIds = Configtor::instance()->get('droplet_ids', []);
         foreach ($dropletIds as $dropletId) {
             try {
                 $this->backupDroplet($dropletId);
-                $this->deleteOldBackups($dropletId);
-                $this->moveBackups($dropletId);
+                $this->deleteOldSnapshots($this->droplet->getSnapshots($dropletId));
             } catch (Exception $exception) {
                 Logger::warn("Unable to process Droplet ID({$dropletId}): " . $exception->getMessage());
                 continue;
             }
         }
 
+        Logger::info("Processing Volume snapshots...");
+        $volumeIds = Configtor::instance()->get('volume_ids', []);
+        foreach ($volumeIds as $volumeId) {
+            try {
+                $this->backupVolume($volumeId);
+                $this->deleteOldSnapshots($this->volume->getSnapshots($volumeId));
+            } catch (Exception $exception) {
+                Logger::warn("Unable to process Volume ID({$volumeId}): ". $exception->getMessage());
+                continue;
+            }
+        }
+
         Logger::info("Backup process completed.");
+    }
+
+    public function backupVolume($volumeId)
+    {
+        $prefix = $this->snapshotPrefix();
+        $timestamp = date('ymdHis');
+        try {
+            // Snapshot namne: foobar-autobackup-1812252359
+            $snapshot = $this->volume->snapshot($volumeId, "{$prefix}{$timestamp}");
+            Logger::info("Volume snapshot '{$prefix}{$timestamp}' created.");
+        } catch (Exception $exception) {
+            Logger::error("Failed to create snapshot for volume({$volumeId}): ". $exception->getMessage());
+            throw $exception;
+        }
     }
 
     /**
@@ -56,7 +86,7 @@ class OceanBackup
         try {
             // Snapshot namne: foobar-autobackup-1812252359
             $snapshot = $this->droplet->snapshot($dropletId, "{$prefix}{$timestamp}");
-            Logger::info("Snapshot '{$prefix}{$timestamp}' created.");
+            Logger::info("Droplet snapshot '{$prefix}{$timestamp}' created.");
         } catch (Exception $exception) {
             Logger::error("Failed to create snapshot for DO({$dropletId}): " . $exception->getMessage());
             throw $exception;
@@ -64,40 +94,13 @@ class OceanBackup
     }
 
     /**
-     * Move backups to different region.
-     * @param int $dropletId
+     * Given a list of Droplet/Volume snapshots, delete old ones.
+     * If backup within `rentetion_days`, not deleteion.
+     * Else if num of backups < `min_backups`, no deletion.
+     * Else, delete.
+     * @param array $snapshots
      */
-    public function moveBackups($dropletId)
-    {
-        // No transfer if user never specify region
-        $region = mb_strtolower(Configtor::instance()->get('transfer_region', ''));
-        if (!$region)
-            return;
-
-        $snapshots = $this->droplet->getSnapshots($dropletId);
-        $snapshots = array_filter($snapshots, [$this, "filterSnapshotBackup"]);
-
-        foreach ($snapshots as $snapshot)
-        {
-            if (in_array($region, $snapshot->regions))
-                continue;
-
-            try {
-                $this->digitalOcean->image()->transfer($snapshot->id, $region);
-                Logger::info("Transferred snapshot({$snapshot->name}) to {$region}.");
-            } catch (Exception $exception) {
-                Logger::warn("Failed to transfer snapshot({$snapshot->name}) to {$region}: " . $exception->getMessage());
-            }
-        }
-    }
-
-    /**
-     * Delete old backups for selected droplet.
-     * If num of backups < MIN_BACKUPS, no deletion
-     * elseif backup date older then MAX_BACKUP_DAYS, delete.
-     * @param int $dropletId
-     */
-    public function deleteOldBackups($dropletId)
+    public function deleteOldSnapshots(array $snapshots)
     {
         $config = Configtor::instance();
         
@@ -106,7 +109,7 @@ class OceanBackup
         if ($retentionDays <= 0)
             return;
 
-        $snapshots = $this->droplet->getSnapshots($dropletId);
+        // Only process those that have matching prefix
         $snapshots = array_filter($snapshots, [$this, "filterSnapshotBackup"]);
 
         // No deletion if number of backup is lesser than `min_backups`
@@ -132,10 +135,10 @@ class OceanBackup
 
     /**
      * Determine if a snapshot's name matches backup naming convention.
-     * @param Image $snapshot
+     * @param $snapshot Either Droplet or Volume snapshot.
      * @return false|int
      */
-    protected function filterSnapshotBackup(Image $snapshot)
+    protected function filterSnapshotBackup($snapshot)
     {
         $prefix = preg_quote($this->snapshotPrefix());
         return preg_match("/^{$prefix}\d{12}$/", $snapshot->name);
